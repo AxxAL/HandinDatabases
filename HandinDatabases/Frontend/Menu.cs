@@ -1,10 +1,12 @@
 ﻿using HandinDatabases.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace HandinDatabases;
 
 public class Menu
 {
-    private SchoolService schoolService = new SchoolService(new SchoolContext());
+    private static SchoolContext context = new SchoolContext();
+    private SchoolService service = new SchoolService(context);
 
     private string[] mainMenu = new string[]
     {
@@ -95,19 +97,19 @@ public class Menu
                     FirstName = studentName[0],
                     LastName = studentName[1]
                 };
-                schoolService.AddStudent(newStudent);
+                service.AddStudent(newStudent);
                 Console.WriteLine($"Created student: { newStudent.FirstName } { newStudent.LastName }.");
                 Pause();
                 break;
             case 2:
-                foreach (Student s in schoolService.GetAllStudents())
+                foreach (Student s in service.GetAllStudents())
                 {
                     Console.WriteLine($"{ s.Id } { s.FirstName } { s.LastName }");
                 }
                 
                 Console.Write("Specify the id of the student to be removed: ");
                 int studentId = int.Parse(Console.ReadLine());
-                Student deletedStudent = schoolService.DeleteStudent(studentId);
+                Student deletedStudent = service.DeleteStudent(studentId);
                 Console.WriteLine($"Deleted student: { deletedStudent.FirstName } { deletedStudent.LastName}");
                 Pause();
                 break;
@@ -118,19 +120,19 @@ public class Menu
                 {
                     Title = courseName
                 };
-                schoolService.AddCourse(newCourse);
+                service.AddCourse(newCourse);
                 Console.WriteLine($"Created a new course: { newCourse.Title }");
                 Pause();
                 break;
             case 4:
-                foreach (Course c in schoolService.GetAllCourses())
+                foreach (Course c in service.GetAllCourses())
                 {
                     Console.WriteLine($"{ c.Id } { c.Title }");
                 }
                 
                 Console.Write("Specify the id of the course to be removed: ");
                 int courseId = int.Parse(Console.ReadLine());
-                Course deletedCourse = schoolService.DeleteCourse(courseId);
+                Course deletedCourse = service.DeleteCourse(courseId);
                 Console.WriteLine($"Deleted course: { deletedCourse.Title }");
                 Pause();
                 break;
@@ -149,24 +151,24 @@ public class Menu
                     Grade = grade
                 };
 
-                schoolService.AddEnrollment(newEnrollment);
+                service.AddEnrollment(newEnrollment);
                 Console.WriteLine($"Created a new enrollment: { newEnrollment.Id } Student: { newEnrollment.StudentId} Course: { newEnrollment.CourseId }");
                 Pause();
                 break;
             case 6:
-                foreach (Enrollment e in schoolService.GetAllEnrollments())
+                foreach (Enrollment e in service.GetAllEnrollments())
                 {
                     Console.WriteLine($"{ e.Id } StudentId: { e.StudentId } CourseId: { e.CourseId } Grade: { e.Grade }");
                 }
 
                 Console.Write("Please specify the id of the enrollment to be removed: ");
                 int removedCourseId = int.Parse(Console.ReadLine());
-                Enrollment deletedEnrollment = schoolService.DeleteEnrollment(removedCourseId);
+                Enrollment deletedEnrollment = service.DeleteEnrollment(removedCourseId);
                 Console.WriteLine($"Deleted enrollment: { deletedEnrollment.Id }");
                 Pause();
                 break;
             case 7:
-                foreach (Book book in schoolService.GetAllBooks())
+                foreach (Book book in service.GetAllBooks())
                 {
                     Console.WriteLine($"Id: { book.Id } Title: { book.Title } Author: { book.Author } Genres: {  book.Genre }");
                 }
@@ -181,7 +183,7 @@ public class Menu
                     StudentId = sId
                 };
 
-                schoolService.AddLoan(newLoan);
+                service.AddLoan(newLoan);
                 Console.WriteLine($"Created a new loan: { newLoan.Id } Book Id: { newLoan.BookId } Student Id: { newLoan.StudentId }");
                 Pause();
                 break;
@@ -204,44 +206,62 @@ public class Menu
         switch (selection)
         {
             case 1:
-                foreach (Student s in schoolService.GetAllStudents())
+                foreach (Student s in service.GetAllStudents())
                 {
                     Console.WriteLine($"{ s.Id } { s.FirstName } { s.LastName }");
                 }
                 Pause();
                 break;
             case 2:
-                foreach (Course c in schoolService.GetAllCourses())
+                foreach (Course c in service.GetAllCourses())
                 {
                     Console.WriteLine($"{ c.Id } { c.Title }");
                 }
                 Pause();
                 break;
             case 3:
-                foreach (Enrollment e in schoolService.GetAllEnrollments())
+                foreach (Enrollment e in service.GetAllEnrollments())
                 {
                     Console.WriteLine($"{ e.Id } Student Id: { e.StudentId } Course Id: { e.CourseId } Grade: { e.Grade }");
                 }
                 Pause();
                 break;
+            case 4:
+                foreach (var course in service.GetAllCourses())
+                {
+                    Console.WriteLine($"{ course.Id } { course.Title }");
+                }
+
+                Console.Write("Please specify the id of the course to search: ");
+                int cId = int.Parse(Console.ReadLine());
+
+                Course cour = service.GetCourseById(cId);
+
+                context.Enrollments.Where(e => e.CourseId == cour.Id).Load();
+                
+                Console.WriteLine($"Amount of students studying { cour.Title }: { cour.Enrollments.Count }");
+                
+                Pause();
+                break;
             case 5:
-                foreach (Student s in schoolService.GetAllStudents())
+                foreach (Student s in service.GetAllStudents())
                 {
                     Console.WriteLine($"{ s.Id } { s.FirstName } { s.LastName }");
                 }
 
                 Console.Write("Please specify the id of the student to search: ");
                 int sId = int.Parse(Console.ReadLine());
-                Student student = schoolService.GetStudentById(sId);
-
+                Student student = service.GetStudentById(sId);
+                
+                context.Enrollments.Where(e => e.StudentId == student.Id).Load();
                 foreach (Enrollment enrollment in student.Enrollments)
                 {
-                    Console.WriteLine($"{ enrollment.Id } Course Id: { enrollment.CourseId } Grade: { enrollment.Grade }");
+                    Console.WriteLine($"{ enrollment.Id } Course Id: { service.GetCourseById(enrollment.CourseId).Title } Grade: { enrollment.Grade }");
                 }
                 Pause();
                 break;
             case 6:
-                foreach (Loan loan in schoolService.GetAllLoans())
+                foreach (Loan loan in service.GetAllLoans())
                 {
                     Console.WriteLine($"{ loan.Id } Book Id: { loan.BookId } Student Id: { loan.StudentId }");
                 }

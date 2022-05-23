@@ -19,5 +19,13 @@ namespace HandinDatabases
                 ServerVersion.AutoDetect(connectionString)
             );
         }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Student>()
+                .HasMany<Enrollment>(s => s.Enrollments);
+            modelBuilder.Entity<Course>()
+                .HasMany<Enrollment>(c => c.Enrollments);
+        }
     }
 }
