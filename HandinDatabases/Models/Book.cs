@@ -10,6 +10,8 @@ public class Book
     public string Author { get; set; }
     public string Genre { get; set; }
     public int Pages { get; set; }
+
+    public Loan Loan { get; set; }
     
     public override bool Equals(object? obj)
     {

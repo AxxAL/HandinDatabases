@@ -24,6 +24,10 @@ namespace HandinDatabases
         {
             modelBuilder.Entity<Student>()
                 .HasMany<Enrollment>(s => s.Enrollments);
+            modelBuilder.Entity<Student>()
+                .HasMany<Loan>(s => s.Loans);
+            modelBuilder.Entity<Book>()
+                .HasOne<Loan>(b => b.Loan);
             modelBuilder.Entity<Course>()
                 .HasMany<Enrollment>(c => c.Enrollments);
         }
